@@ -1,0 +1,54 @@
+import os
+import zipfile
+import shutil
+import json
+
+if not os.path.isdir("dist"):
+    os.mkdir("dist")
+
+datapackpath = input("Enter the filename to the datapack (must be .zip):")
+if not os.path.exists(os.path.join(os.getcwd(), datapackpath)):
+    print("Datapack does not exist")
+    exit()
+shutil.copyfile(
+    os.path.join(os.getcwd(), datapackpath),
+    os.path.join("dist", os.path.basename(datapackpath)),
+)
+with zipfile.ZipFile(
+    os.path.join("dist", os.path.basename(datapackpath)), "w"
+) as zip_ref:
+    modloader = input("Enter Modloader, 1 for Fabric or 2 for Neoforge:")
+    if modloader == "1":
+        with zipfile.ZipFile(
+            os.path.join(os.getcwd(), datapackpath), "r"
+        ) as packmcmetazip:
+            packmcmeta = json.load(packmcmetazip.open("pack.mcmeta"))
+            description = packmcmeta["pack"]["description"]
+        name = input("What is the name of your mod?:")
+        modid = input("What is the id of your mod? (must have no spaces):")
+        author = input("Who is the author of your mod?:")
+        version = input(
+            "What is the version of your mod? (NOT what mc version you're targeting):"
+        )
+        mcversion = input("What version of Minecraft are you targeting?:")
+        data = {
+            "schemaVersion": 1,
+            "id": modid,
+            "version": version,
+            "name": name,
+            "description": description,
+            "authors": [author],
+            "depends": {"fabricloader": ">=0.15.0", "minecraft": [mcversion]},
+        }
+        zip_ref.writestr(
+            "fabric.mod.json", json.dumps(data, indent=2)
+        )  # add data from input here
+    elif modloader == "2":
+        zip_ref.write("neoforge.mods.toml")
+    else:
+        print("Invalid modloader")
+        exit()
+os.rename(
+    os.path.join("dist", os.path.basename(datapackpath)),
+    os.path.join("dist", f"{modid}-{version}-{mcversion}.jar"),
+)
