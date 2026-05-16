@@ -50,5 +50,5 @@ with zipfile.ZipFile(
         exit()
 os.rename(
     os.path.join("dist", os.path.basename(datapackpath)),
-    os.path.join("dist", f"{modid}-{version}-{mcversion}.jar"),
+    os.path.join("dist", f"{modid}-{version}.jar"),
 )
