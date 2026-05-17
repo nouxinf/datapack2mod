@@ -15,7 +15,7 @@ shutil.copyfile(
     os.path.join("dist", os.path.basename(datapackpath)),
 )
 with zipfile.ZipFile(
-    os.path.join("dist", os.path.basename(datapackpath)), "w"
+    os.path.join("dist", os.path.basename(datapackpath)), "a"
 ) as zip_ref:
     modloader = input("Enter Modloader, 1 for Fabric or 2 for Neoforge:")
     if modloader == "1":
@@ -44,7 +44,39 @@ with zipfile.ZipFile(
             "fabric.mod.json", json.dumps(data, indent=2)
         )  # add data from input here
     elif modloader == "2":
-        zip_ref.write("neoforge.mods.toml")
+        name = input("What is the name of your mod?:")
+        modid = input("What is the id of your mod? (must have no spaces):")
+        license = input("What is the license of your mod? (e.g., MIT, CC-BY-NC-4.0):")
+        version = input(
+            "What is the version of your mod? (NOT what mc version you're targeting):"
+        )
+        with zipfile.ZipFile(
+            os.path.join(os.getcwd(), datapackpath), "r"
+        ) as packmcmetazip:
+            packmcmeta = json.load(packmcmetazip.open("pack.mcmeta"))
+            description = packmcmeta["pack"]["description"]
+        versionrange = input(
+            "What is your Minecraft version range (e.g. 1.21.11,26.1.2):"
+        )
+        zip_ref.writestr(
+            "META-INF/neoforge.mods.toml",
+            f"""
+modLoader = "javafml"
+loaderVersion = "[1,)"
+license = "{license}"
+
+[[mods]]
+modId = "{modid}"
+version = "{version}"
+displayName = "{name}"
+description = "{description}"
+
+[[dependencies.{modid}]]
+modId = "minecraft"
+type = "required"
+versionRange = "[{versionrange}]"
+""",
+        )
     else:
         print("Invalid modloader")
         exit()
